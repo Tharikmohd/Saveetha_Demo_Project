@@ -67,6 +67,18 @@
         }
       }
     },
+    "/api/Profile": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Student": {
       "get": {
         "tags": [
@@ -296,6 +308,9 @@
   "tags": [
     {
       "name": "Auth"
+    },
+    {
+      "name": "Profile"
     },
     {
       "name": "Student"

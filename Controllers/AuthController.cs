@@ -35,7 +35,7 @@ namespace Saveetha_Demo_Project.Controllers
         {
             var result = await authrepo.LoginAsync(dto);
             if (!result.success)
-                return Conflict(result);
+                return Unauthorized(result);
 
             return Ok(result);
 

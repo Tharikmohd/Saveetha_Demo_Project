@@ -5,6 +5,14 @@ using Saveetha_Demo_Project.Interface;
 using Saveetha_Demo_Project.Model;
 using Saveetha_Demo_Project.Repository;
 using Saveetha_Demo_Project.Service;
+using DotNetEnv;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+
+
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +28,34 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseMySql(connectionstring, ServerVersion.AutoDetect(connectionstring));
 });
+
+//JWT Configuration
+
+var jwtkey = builder.Configuration["Jwt:Key"];
+if(string.IsNullOrWhiteSpace(jwtkey))
+{
+    throw new InvalidOperationException("Jwt Key is missing from environment Variable");
+}
+
+builder.Services.AddAuthentication("Bearer").AddJwtBearer(options =>
+{
+
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwtkey)),
+        ClockSkew = TimeSpan.Zero
+
+    };
+
+});
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -31,6 +67,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IAuthInterface, AuthService>();
 builder.Services.AddScoped<IUserinterface, UserRepository>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<IJwtService, JwtService>();
 
 
 
@@ -47,6 +84,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

@@ -9,11 +9,13 @@ namespace Saveetha_Demo_Project.Service
     {
         private readonly IUserinterface userrepo;
         private readonly IPasswordHasher<User> pwdhsh;
+        private readonly IJwtService jwtService;
 
-        public AuthService(IUserinterface usersrepo, IPasswordHasher<User> hasher)
+        public AuthService(IUserinterface usersrepo, IPasswordHasher<User> hasher, IJwtService jwt)
         {
             userrepo = usersrepo;
             pwdhsh = hasher;
+            jwtService = jwt;
         }
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
@@ -38,13 +40,20 @@ namespace Saveetha_Demo_Project.Service
                 };
             }
 
+            var token = jwtService.GenerateToken(
+                user.id,
+                user.username,
+                user.email);
+
             return new AuthResponseDto
             {
                 success = true,
                 message = "Welcome back",
                 user_id = user.id,
                 username = user.username,
-                email = user.email
+                email = user.email,
+                token = token
+
             };
         }
 
